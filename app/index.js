@@ -117,16 +117,41 @@ app.post('/asr', async (req, res) => {
   }
 
   const transcribeResult = JSON.parse(downloadResponse.Body);
-  console.log(`${Date.now()}: SUCCESS: ${transcribeResult}`);
-  console.log(transcribeResult);
   await deleteObject(`${key}.json`);
+
+  if (transcribeResult.results.transcripts.length === 0) {
+    console.log(`${Date.now()}: ERROR: No results returned.`);
+    res.status(500).send('err');
+    return;
+  }
+
+  const transcript = transcribeResult.results.transcripts[0].transcript;
+  const items = transcribeResult.results.items;
+
+  let confidence = 0;
+  let count = 0;
+  for (const item of items) {
+    for (const alternative of item.alternatives) {
+      if (alternative.hasOwnProperty('confidence') &&
+          alternative.confidence !== null) {
+        count++;
+        confidence += parseFloat(alternative.confidence);
+      }
+    }
+  }
+
+  if (count > 0) {
+    confidence /= count;
+  }
+
+  console.log(`${Date.now()}: SUCCESS: "${transcript}" (${confidence})`);
 
   res.status(200).json({
     status: 'ok',
     data: [
       {
-        confidence: 0,
-        text: '',
+        confidence,
+        text: transcript,
       },
     ],
   });
