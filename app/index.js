@@ -64,7 +64,7 @@ app.post('/asr', async (req, res) => {
         MediaFileUri: uploadResponse.Location,
       },
       MediaFormat: 'wav',
-      MediaSampleRateHertz: 16000,
+      // MediaSampleRateHertz: 16000,
       OutputBucketName: config.s3Bucket,
       Settings: {
         ChannelIdentification: false,
@@ -118,6 +118,7 @@ app.post('/asr', async (req, res) => {
 
   const transcribeResult = JSON.parse(downloadResponse.Body);
   console.log(`${Date.now()}: SUCCESS: ${transcribeResult}`);
+  console.log(transcribeResult);
   await deleteObject(`${key}.json`);
 
   res.status(200).json({
