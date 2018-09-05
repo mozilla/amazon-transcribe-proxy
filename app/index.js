@@ -3,14 +3,17 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const express = require('express');
 
-const app = express();
-const s3 = new AWS.S3();
-const transcribeService = new AWS.TranscribeService();
-
 const config = {
   port: process.env.PORT || 8000,
   s3Bucket: process.env.S3_BUCKET,
+  region: process.env.REGION,
 };
+
+AWS.config.update({region: config.region});
+
+const app = express();
+const s3 = new AWS.S3();
+const transcribeService = new AWS.TranscribeService();
 
 const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(() => resolve(), ms));
