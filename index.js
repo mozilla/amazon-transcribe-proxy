@@ -9,7 +9,7 @@ const transcribeService = new AWS.TranscribeService();
 
 const config = {
   port: process.env.PORT || 8000,
-  s3Bucket: process.env.PORT || 'speech-proxy-aws-transcribe',
+  s3Bucket: process.env.S3_BUCKET,
 };
 
 const sleep = (ms) => {
