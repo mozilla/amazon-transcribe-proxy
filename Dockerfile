@@ -1,10 +1,9 @@
 FROM node:8
 
-RUN npm install --save aws-sdk body-parser express
+COPY --chown=node:node app /app
 
-RUN mkdir -p /app/amazon-transcribe-proxy/
-COPY * /app/amazon-transcribe-proxy/
+USER node
+WORKDIR /app
+RUN npm install --production
 
-# Set the default command
-WORKDIR /app/amazon-transcribe-proxy
-CMD node index.js
+ENTRYPOINT ["node", "index.js"]
