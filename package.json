@@ -1,0 +1,20 @@
+{
+  "name": "amazon-transcribe",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "author": "mstegeman",
+  "license": "MPL-2.0",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.308.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3"
+  },
+  "devDependencies": {
+    "babel-eslint": "^9.0.0",
+    "eslint": "^5.5.0"
+  }
+}
