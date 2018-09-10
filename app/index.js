@@ -1,7 +1,9 @@
 const AWS = require('aws-sdk');
 const bodyParser = require('body-parser');
+const childProcess = require('child_process');
 const crypto = require('crypto');
 const express = require('express');
+const fs = require('fs');
 
 const config = {
   port: process.env.PORT || 8000,
@@ -42,18 +44,56 @@ app.post('/asr', async (req, res) => {
   const audio = req.body;
   const key = crypto.randomBytes(20).toString('hex');
 
+  const rawFile = `/tmp/${key}.raw`;
+  const wavFile = `/tmp/${key}.wav`;
+
+  fs.writeFileSync(rawFile, audio);
+
+  const proc = childProcess.spawnSync(
+    'ffmpeg',
+    ['-f', 's16le', '-ar', '16000', '-ac', '2', '-i', rawFile, wavFile]
+  );
+
+  try {
+    fs.unlinkSync(rawFile);
+  } catch (_e) {
+    // pass
+  }
+
+  if (proc.status !== 0) {
+    console.log(`${Date.now()}: ERROR: ffmpeg exited with code ${proc.status}`);
+    try {
+      fs.unlinkSync(wavFile);
+    } catch (_e) {
+      // pass
+    }
+    res.status(500).send('err');
+    return;
+  }
+
   let uploadResponse;
   try {
     uploadResponse = await s3.upload({
-      Body: audio,
+      Body: fs.readFileSync(wavFile),
       Bucket: config.s3Bucket,
       ContentType: 'audio/wav',
       Key: `${key}.wav`,
     }).promise();
   } catch (e) {
     console.log(`${Date.now()}: ERROR: Error saving to S3: ${e}`);
+    try {
+      fs.unlinkSync(wavFile);
+    } catch (_e) {
+      // pass
+    }
     res.status(500).send('err');
     return;
+  }
+
+  try {
+    fs.unlinkSync(wavFile);
+  } catch (_e) {
+    // pass
   }
 
   let transcribeResponse;
